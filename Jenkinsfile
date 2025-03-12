@@ -1,23 +1,24 @@
 pipeline {
     agent any
-
-    environment {
-        REPO_OWNER = 'dpei0287'
-        REPO_NAME = 'jenkins-demo'
-    }
-
+    
     stages {
-        stage('Close GitHub Repository') {
+        stage('Clone Repository') {
             steps {
                 script {
-                    def response = sh(script: """
-                        curl -X PATCH \
-                        -H \"Accept: application/vnd.github.v3+json\" \
-                        https://api.github.com/repos/$REPO_OWNER/$REPO_NAME \
-                        -d '{"archived": true}'
-                    """, returnStdout: true).trim()
-                    
-                    echo "GitHub API Response: ${response}"
+                    // Clone the public GitHub repository
+                    checkout([
+                        $class: 'GitSCM', 
+                        branches: [[name: '*/main']], 
+                        userRemoteConfigs: [[url: 'https://github.com/jared-codes/demo-repo.git']]
+                    ])
+                }
+            }
+        }
+        
+        stage('List Files') {
+            steps {
+                script {
+                    sh 'ls -la'
                 }
             }
         }
