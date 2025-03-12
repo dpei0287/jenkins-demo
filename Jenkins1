@@ -1,20 +1,24 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:latest'  // Uses a Docker-in-Docker (DinD) image
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock' 
+        }
+    }
+    
+    environment {
+        IMAGE_NAME = "my-app"
+        CONTAINER_NAME = "my-app-container"
+        DOCKER_REGISTRY = "mydockerhubuser"
+    }
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                script {
-                    // Clone the public GitHub repository
-                    checkout([
-                        $class: 'GitSCM', 
-                        branches: [[name: '*/main']], 
-                        userRemoteConfigs: [[url: 'https://github.com/dpei0287/jenkins-demo.git']]
-                    ])
-                }
+                git branch: 'main', url: 'https://github.com/dpei0287/jenkins-demo.git'
             }
         }
-        
+
         stage('List Files') {
             steps {
                 script {
@@ -23,35 +27,21 @@ pipeline {
             }
         }
 
-        stage('Cleanup Old Containers') {
+        stage('Build Docker Image') {
             steps {
-                script {
-                    sh 'docker rm -f apache-container || true'
-                }
+                sh "docker build -t ${IMAGE_NAME}:latest ."
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    sh 'docker build -t apache-jenkins-demo .'
-                }
-            }
-        }
 
         stage('Run Container') {
             steps {
-                script {
-                    sh 'docker run -d -p 8080:80 --name apache-container apache-jenkins-demo'
-                }
-            }
-        }
-
-        stage('Test Deployment') {
-            steps {
-                script {
-                    sh 'curl -I http://localhost:8080'
-                }
+                // Stop and remove any existing container
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
+                
+                // Run the new container
+                sh "docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${IMAGE_NAME}:latest"
             }
         }
     }
