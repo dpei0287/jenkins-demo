@@ -19,6 +19,8 @@ pipeline {
             steps {
                 script {
                     sh 'ls -la'
+                    sh 'pwd'
+                    sh 'hostname'
                 }
             }
         }
