@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git 'https://github.com/dpei0287/jenkins-demo.git'
+            }
+        }
+
+        stage('Cleanup Old Containers') {
+            steps {
+                script {
+                    sh 'docker rm -f apache-container || true'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh 'docker build -t apache-jenkins-demo .'
+                }
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                script {
+                    sh 'docker run -d -p 8080:80 --name apache-container apache-jenkins-demo'
+                }
+            }
+        }
+
+        stage('Test Deployment') {
+            steps {
+                script {
+                    sh 'curl -I http://localhost:8080'
+                }
+            }
+        }
+    }
+}
