@@ -8,6 +8,14 @@ pipeline {
             }
         }
 
+         stage('List Files') {
+            steps {
+                script {
+                    sh 'ls -la'
+                }
+            }
+        }
+
         stage('Cleanup Old Containers') {
             steps {
                 script {
