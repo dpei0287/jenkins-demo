@@ -19,7 +19,7 @@ pipeline {
         stage('Run Container') {
             steps {
                 script {
-                    sh 'docker run -d -p 8080:80 --name apache-container jenkins-demo'
+                    sh 'docker run -d -p 3000:80 --name apache-container jenkins-demo'
                 }
             }
         }
@@ -27,7 +27,7 @@ pipeline {
         stage('Test Deployment') {
             steps {
                 script {
-                    sh 'curl -I http://localhost:8080'
+                    sh 'curl -I http://localhost:3000'
                 }
             }
         }
