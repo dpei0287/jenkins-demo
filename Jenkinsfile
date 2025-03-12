@@ -1,33 +1,23 @@
 pipeline {
     agent any
 
+    environment {
+        REPO_OWNER = 'dpei0287'
+        REPO_NAME = 'jenkins-demo'
+    }
+
     stages {
-        stage('Clone Repo') {
-            steps {
-                git 'https://github.com/dpei0287/jenkins-demo.git'
-            }
-        }
-
-        stage('Build Docker Image') {
+        stage('Close GitHub Repository') {
             steps {
                 script {
-                    sh 'docker build -t jenkins-demo .'
-                }
-            }
-        }
-
-        stage('Run Container') {
-            steps {
-                script {
-                    sh 'docker run -d -p 3000:80 --name apache-container jenkins-demo'
-                }
-            }
-        }
-
-        stage('Test Deployment') {
-            steps {
-                script {
-                    sh 'curl -I http://localhost:3000'
+                    def response = sh(script: """
+                        curl -X PATCH \
+                        -H \"Accept: application/vnd.github.v3+json\" \
+                        https://api.github.com/repos/$REPO_OWNER/$REPO_NAME \
+                        -d '{"archived": true}'
+                    """, returnStdout: true).trim()
+                    
+                    echo "GitHub API Response: ${response}"
                 }
             }
         }
