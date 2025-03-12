@@ -2,13 +2,20 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone Repo') {
+        stage('Clone Repository') {
             steps {
-                git 'https://github.com/dpei0287/jenkins-demo.git'
+                script {
+                    // Clone the public GitHub repository
+                    checkout([
+                        $class: 'GitSCM', 
+                        branches: [[name: '*/main']], 
+                        userRemoteConfigs: [[url: 'https://github.com/dpei0287/jenkins-demo.git']]
+                    ])
+                }
             }
         }
-
-         stage('List Files') {
+        
+        stage('List Files') {
             steps {
                 script {
                     sh 'ls -la'
